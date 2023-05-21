@@ -32,6 +32,10 @@ func Given[I any](instance I) error {
 	return Transfrom[any, I](&global).Given(instance)
 }
 
+func GivenType(instance any, t reflect.Type) error {
+	return global.GivenType(instance, t)
+}
+
 func Transfrom[A, B any](s *Summoner[A]) *Summoner[B] {
 	return &Summoner[B]{
 		instances: s.instances,

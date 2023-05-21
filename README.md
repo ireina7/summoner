@@ -13,6 +13,9 @@ go get -u github.com/ireina7/summoner
 ```
 
 ### Usage
+Summoner has two basic functions: `Summon` and `Given`.
+`Summon[T]()` summons a value of type `T`,
+`Given[T](T)` injects a value of type `T`.
 ```go
 import "fmt"
 import summoner "github.com/ireina7/summoner"
@@ -173,6 +176,15 @@ func main() {
     fmt.Println(sf.FoldLeft([]string{"Hello", "world", "fst", "snd"}))
 }
 ```
+
+## API for golang compiler version before 1.18
+Summoner also has API for non-generic style:
+```go
+func SummonType(t reflect.Type) (any, error)
+func GivenType(instance any, t reflect.Type) error
+```
+Without generics, one need to pass `reflect.Type` value.
+
 
 ## Contribution
 Any new ideas?
