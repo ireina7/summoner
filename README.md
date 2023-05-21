@@ -129,6 +129,11 @@ func main() {
 
 ## An example for `Monoid` and `Fold`
 ```go
+type Monoid[A any] interface {
+	Zero() A
+	Plus(a, b A) A
+}
+
 type MonoidString struct{}
 
 func (self *MonoidString) Zero() string {
