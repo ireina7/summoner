@@ -6,7 +6,6 @@ Let's summon magic!
 ![banner](banner.jpg)
 
 
----
 ## Getting started
 ### Get me
 ```shell
@@ -96,6 +95,7 @@ Suppose you want to build instance from some existed instance,
 for example, 
 - *if a type has implemented typeclass `Show`, then it should implement `Debug` automatically* or
 - *For all types implemented `Show`, they also implement `Debug` dynamically*
+
 Here's the code:
 ```go
 type Debug[A any] struct {
@@ -125,6 +125,48 @@ func main() {
     fmt.Println(sp.Debug(Person{0, "Tom", 10}))
 }
 
+```
+
+## An example for `Monoid` and `Fold`
+```go
+type MonoidString struct{}
+
+func (self *MonoidString) Zero() string {
+	return ""
+}
+
+func (self *MonoidString) Plus(a, b string) string {
+	return a + " :+: " + b
+}
+
+type Fold[A any] struct {
+	Monoid Monoid[A]
+}
+
+func (self *Fold[A]) FoldLeft(xs []A) A {
+    m := self.Monoid
+	ans := m.Zero()
+	for _, x := range xs {
+		ans = m.Plus(ans, x)
+	}
+	return ans
+}
+
+
+func main() {
+    Given[Monoid[string]](new(MonoidString))
+    ss, err := Summon[Monoid[string]]()
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(ss.Plus("Hello", "world"))
+
+    sf, err := Summon[Fold[string]]() // Get `Fold[string]` for free!
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(sf.FoldLeft([]string{"Hello", "world", "fst", "snd"}))
+}
 ```
 
 ## Contribution
