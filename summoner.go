@@ -1,7 +1,6 @@
 package summoner
 
 import (
-	"fmt"
 	"reflect"
 )
 
@@ -39,8 +38,9 @@ func Transfrom[A, B any](s *Summoner[A]) *Summoner[B] {
 	}
 }
 
-func (self *Summoner[A]) tryBuild() (A, error) {
-	t := TypeOf[A]()
+func (self *Summoner[A]) tryBuild(t reflect.Type) (any, error) {
+	// t := TypeOf[A]()
+	// fmt.Println("Try build", t)
 	r := reflect.New(t)
 	i := 0
 	var a A
@@ -54,30 +54,40 @@ func (self *Summoner[A]) tryBuild() (A, error) {
 		field.Set(dependency)
 		i += 1
 	}
-	ans, ok := r.Interface().(*A)
-	if !ok {
-		return a, fmt.Errorf("Type conversion error: %v", r)
-	}
-	return *ans, nil
+	ans := r.Elem().Interface()
+	return ans, nil
 }
 
 func (self *Summoner[A]) Summon() (A, error) {
 	t := TypeOf[A]()
+	// fmt.Println("Summon", t)
 	ev, ok := self.instances[t]
 	if ok {
 		return ev.(A), nil
 	}
-	// var a A
+	var a A
 	// return a, fmt.Errorf("Instance of %v not found", t)
-	return self.tryBuild()
+	x, err := self.tryBuild(t)
+	if err != nil {
+		return a, err
+	}
+	return x.(A), nil
+
 }
 
 func (self *Summoner[A]) SummonType(t reflect.Type) (any, error) {
+	// fmt.Println("Summon", t)
 	ev, ok := self.instances[t]
 	if ok {
 		return ev, nil
 	}
-	return nil, fmt.Errorf("Instance of %v not found", t)
+	// return nil, fmt.Errorf("Instance of %v not found", t)
+	var a A
+	x, err := self.tryBuild(t)
+	if err != nil {
+		return a, err
+	}
+	return x, nil
 }
 
 func (self *Summoner[A]) Given(ev A) error {

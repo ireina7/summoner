@@ -27,6 +27,12 @@ func TestSummoner(t *testing.T) {
 		panic(err)
 	}
 	t.Log(es.Debug(Person{0, "Tom", 10}))
+
+	ed, err := Summon[Recursive[Person]]()
+	if err != nil {
+		panic(err)
+	}
+	ed.Log(Person{1, "Jack", 14})
 }
 
 type Person struct {
@@ -57,4 +63,13 @@ type Debug[A any] struct {
 
 func (self *Debug[A]) Debug(a A) string {
 	return fmt.Sprintf("Debug: %s", self.Show.Show(a))
+}
+
+type Recursive[A any] struct {
+	Debugger Debug[A]
+}
+
+func (self *Recursive[A]) Log(a A) {
+	fmt.Println(self.Debugger.Debug(a))
+	fmt.Println(self.Debugger.Show.Show(a))
 }
