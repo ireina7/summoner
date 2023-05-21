@@ -1,5 +1,6 @@
 # summoner
-Typeclass system and dependency injection for Golang
+Typeclass system and dependency injection for Golang.
+![banner](banner.jpg)
 
 ## Basic dependency injection
 You can use `summoner` to achieve simple typeclass function.
@@ -7,7 +8,7 @@ For example, if you want to have a typeclass `Show`,
 and implement it for types `int`, `string` and `Person`:
 ```go
 type Show[A any] interface {
-	Show(a A) string
+    Show(a A) string
 }
 
 type ShowInt struct{}
@@ -37,22 +38,22 @@ func main() {
     Given[Show[int]](new(ShowPerson))
 
     si, err := Summon[Show[int]]()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(si.Show(7))
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(si.Show(7))
 
     ss, err := Summon[Show[String]]()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(ss.Show("str"))
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(ss.Show("str"))
 
     sp, err := Summon[Show[Person]]()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(sp.Show(Person{0, "Tom", 10}))
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(sp.Show(Person{0, "Tom", 10}))
 }
 ```
 
@@ -64,11 +65,11 @@ for example,
 Here's the code:
 ```go
 type Debug[A any] struct {
-	Show Show[A] // If implemented `Show`, then implement `Debug`
+    Show Show[A] // If implemented `Show`, then implement `Debug`
 }
 
 func (self *Debug[A]) Debug(a A) string {
-	return fmt.Sprintf("Debug: %s", self.Show.Show(a))
+    return fmt.Sprintf("Debug: %s", self.Show.Show(a))
 }
 
 
@@ -78,16 +79,16 @@ func main() {
     Given[Show[int]](new(ShowPerson))
 
     si, err := Summon[Debug[int]]() // Get Debug[int] for free
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(si.Debug(7))
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(si.Debug(7))
 
     sp, err := Summon[Debug[Person]]() // Get Debug[Person] for free
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(sp.Debug(Person{0, "Tom", 10}))
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(sp.Debug(Person{0, "Tom", 10}))
 }
 
 ```
