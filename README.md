@@ -1,6 +1,40 @@
-# summoner
+# Summoner
 Typeclass system and dependency injection for Golang.
+
+Let's summon magic!
+
 ![banner](banner.jpg)
+
+
+---
+## Getting started
+### Get me
+```shell
+go get -u github.com/ireina7/summoner
+```
+
+### Usage
+```go
+import "fmt"
+import summoner "github.com/ireina7/summoner"
+
+func Summon[A any]() (A, error) {
+    return summoner.Summon[A]()
+}
+
+func Given[A any](a A) error {
+    return summoner.Given(a)
+}
+
+
+func main() {
+    Given[int](0) // Default integer!
+
+    fmt.Println(Summon[int]())
+}
+```
+
+
 
 ## Basic dependency injection
 You can use `summoner` to achieve simple typeclass function.
@@ -92,3 +126,6 @@ func main() {
 }
 
 ```
+
+## Contribution
+Any new ideas?
