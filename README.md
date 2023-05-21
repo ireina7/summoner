@@ -34,8 +34,8 @@ func (self *ShowPerson) Show(p Person) string {
 
 func main() {
     Given[Show[int]](new(ShowInt))
-    Given[Show[int]](new(ShowString))
-    Given[Show[int]](new(ShowPerson))
+    Given[Show[string]](new(ShowString))
+    Given[Show[Person]](new(ShowPerson))
 
     si, err := Summon[Show[int]]()
     if err != nil {
@@ -75,8 +75,8 @@ func (self *Debug[A]) Debug(a A) string {
 
 func main() {
     Given[Show[int]](new(ShowInt))
-    Given[Show[int]](new(ShowString))
-    Given[Show[int]](new(ShowPerson))
+    Given[Show[String]](new(ShowString))
+    Given[Show[Person]](new(ShowPerson))
 
     si, err := Summon[Debug[int]]() // Get Debug[int] for free
     if err != nil {
