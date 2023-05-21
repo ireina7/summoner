@@ -130,31 +130,31 @@ func main() {
 ## An example for `Monoid` and `Fold`
 ```go
 type Monoid[A any] interface {
-	Zero() A
-	Plus(a, b A) A
+    Zero() A
+    Plus(a, b A) A
 }
 
 type MonoidString struct{}
 
 func (self *MonoidString) Zero() string {
-	return ""
+    return ""
 }
 
 func (self *MonoidString) Plus(a, b string) string {
-	return a + " :+: " + b
+    return a + " :+: " + b
 }
 
 type Fold[A any] struct {
-	Monoid Monoid[A]
+    Monoid Monoid[A]
 }
 
 func (self *Fold[A]) FoldLeft(xs []A) A {
     m := self.Monoid
-	ans := m.Zero()
-	for _, x := range xs {
-		ans = m.Plus(ans, x)
-	}
-	return ans
+    ans := m.Zero()
+    for _, x := range xs {
+        ans = m.Plus(ans, x)
+    }
+    return ans
 }
 
 
