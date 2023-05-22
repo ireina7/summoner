@@ -186,5 +186,10 @@ func GivenType(instance any, t reflect.Type) error
 Without generics, one need to pass `reflect.Type` value.
 
 
+## Todo
+- Better error message
+- Optimization for runtime
+- Forall type constraint a little verbose
+
 ## Contribution
 Any new ideas?
