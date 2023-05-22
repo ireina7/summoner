@@ -190,6 +190,7 @@ Without generics, one need to pass `reflect.Type` value.
 - Better error message
 - Optimization for runtime
 - Forall type constraint a little verbose
+- RPC server
 
 ## Contribution
 Any new ideas?
