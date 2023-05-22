@@ -1,6 +1,6 @@
 package spells
 
-import "github.com/ireina7/summoner/summoner"
+import "github.com/ireina7/summoner"
 
 func Summon[A any]() (A, error) {
 	return summoner.Summon[A]()

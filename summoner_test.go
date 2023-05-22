@@ -42,6 +42,8 @@ func TestSummoner(t *testing.T) {
 	}
 	xx := ea.(App[Person])
 	xx.Execute(Person{1, "Jack", 14})
+
+	t.Log(global.Inspect())
 }
 
 type Person struct {

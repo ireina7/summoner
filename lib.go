@@ -2,34 +2,34 @@ package summoner
 
 import (
 	"reflect"
-
-	"github.com/ireina7/summoner/summoner"
 )
 
 func TypeOf[A any]() reflect.Type {
-	return summoner.TypeOf[A]()
+	return reflect.TypeOf((*A)(nil)).Elem()
 }
 
 func IsRule[A any]() bool {
-	return summoner.IsRule[A]()
+	return TypeOf[A]().Kind() == reflect.Struct
 }
 
 func Summon[I any]() (I, error) {
-	return summoner.Summon[I]()
+	return Transfrom[any, I](&global).Summon()
 }
 
 func SummonType(t reflect.Type) (any, error) {
-	return summoner.SummonType(t)
+	return global.SummonType(t)
 }
 
 func Given[I any](instance I) error {
-	return summoner.Given(instance)
+	return Transfrom[any, I](&global).Given(instance)
 }
 
 func GivenType(instance any, t reflect.Type) error {
-	return summoner.GivenType(instance, t)
+	return global.GivenType(instance, t)
 }
 
-func Transfrom[A, B any](s *summoner.Summoner[A]) *summoner.Summoner[B] {
-	return summoner.Transfrom[A, B](s)
+func Transfrom[A, B any](s *Summoner[A]) *Summoner[B] {
+	return &Summoner[B]{
+		instances: s.instances,
+	}
 }
