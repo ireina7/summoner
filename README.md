@@ -15,7 +15,8 @@ go get -u github.com/ireina7/summoner
 ### Usage
 Summoner has two basic functions: `Summon` and `Given`.
 `Summon[T]()` summons a value of type `T`,
-`Given[T](T)` injects a value of type `T`.
+`Given[T](T)` injects a value of type `T`,
+`Inject(any)` injects any struct pointer recursively while still persist existing fields.
 ```go
 import "fmt"
 import summoner "github.com/ireina7/summoner"
@@ -128,6 +129,41 @@ func main() {
     fmt.Println(sp.Debug(Person{0, "Tom", 10}))
 }
 
+```
+
+### Inject existing value
+To inject some fields(e.g., summon only subset of a struct field set),
+Tag fields to be summoned with `summon:"true"`.
+```go
+type Service struct {
+	Version  string
+	Debugger *Debug[string] `summon:"true"`
+	Device   Device
+}
+
+type Device struct {
+	Id   int `summon:"true"`
+	Name string
+	Show Show[string] `summon:"type"`
+}
+
+func TestInject(t *testing.T) {
+	Given[Show[string]](new(ShowString))
+	Given[int](-7)
+	device := &Device{
+		Name: "sp",
+	}
+	service := &Service{
+		Version: "0.1.0",
+		Device:  *device,
+	}
+	err := global.Inject(service)
+	if err != nil {
+		t.Error(err)
+	}
+	t.Logf("Service: %#v", service)
+	t.Log(service.Debugger.Debug("sss"))
+}
 ```
 
 ## An example for `Monoid` and `Fold`
