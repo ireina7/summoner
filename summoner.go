@@ -3,6 +3,7 @@ package summoner
 import (
 	"fmt"
 	"reflect"
+	// "github.com/traefik/yaegi/stdlib"
 )
 
 type Typeclass[A any] interface {
@@ -17,8 +18,23 @@ type Transmute[A any] interface {
 	Transform() A
 }
 
+// func ValueFromTypeName(tname string) (any, error) {
+// 	i := interp.New(interp.Options{GoPath: "/Users/comcx/go"})
+// 	// i.CompilePath(".")
+// 	_, err := i.Eval(`.`)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	x, err := i.Eval(fmt.Sprintf(`%s{}`, tname))
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return x.Interface(), nil
+// }
+
 type Summoner[A any] struct {
 	instances map[reflect.Type]any
+	rules     map[reflect.Type]any
 }
 
 type summonError struct {
@@ -28,36 +44,6 @@ type summonError struct {
 func (err *summonError) Error() string {
 	return fmt.Sprintf("Summon error: expected type %v", err.want)
 }
-
-// func TypeOf[A any]() reflect.Type {
-// 	return reflect.TypeOf((*A)(nil)).Elem()
-// }
-
-// func IsRule[A any]() bool {
-// 	return TypeOf[A]().Kind() == reflect.Struct
-// }
-
-// func Summon[I any]() (I, error) {
-// 	return Transfrom[any, I](&global).Summon()
-// }
-
-// func SummonType(t reflect.Type) (any, error) {
-// 	return global.SummonType(t)
-// }
-
-// func Given[I any](instance I) error {
-// 	return Transfrom[any, I](&global).Given(instance)
-// }
-
-// func GivenType(instance any, t reflect.Type) error {
-// 	return global.GivenType(instance, t)
-// }
-
-// func Transfrom[A, B any](s *Summoner[A]) *Summoner[B] {
-// 	return &Summoner[B]{
-// 		instances: s.instances,
-// 	}
-// }
 
 func (self *Summoner[A]) tryBuild(t reflect.Type) (any, error) {
 	if t.Kind() == reflect.Interface {
@@ -132,8 +118,20 @@ func (self *Summoner[A]) Inspect() string {
 	)
 }
 
+func (self *Summoner[A]) Rules() string {
+	rules := ""
+	for k, v := range self.rules {
+		rules += fmt.Sprintf("\t%v: %v\n", k, v)
+	}
+	return fmt.Sprintf("Rules[%d] {\n%v}",
+		len(self.rules),
+		rules,
+	)
+}
+
 var global Summoner[any] = Summoner[any]{
 	instances: map[reflect.Type]any{},
+	rules:     map[reflect.Type]any{},
 }
 
 type RType = reflect.Type
@@ -147,4 +145,64 @@ func fromReflect(t reflect.Type) Type {
 		RType:  t,
 		params: []Type{},
 	}
+}
+
+func (self *Summoner[A]) Inject(structPtr any) error {
+	t := reflect.TypeOf(structPtr)
+	if t.Kind() != reflect.Pointer {
+		return fmt.Errorf("t.Kind(%v) is not reflect.Pointer", t.Kind())
+	}
+	v := reflect.ValueOf(structPtr).Elem()
+	for i := 0; i < v.NumField(); i += 1 {
+		field := v.Field(i)
+		ft := field.Type()
+		tag := t.Elem().Field(i).Tag.Get("summon")
+		if len(tag) == 0 {
+			switch ft.Kind() {
+			case reflect.Pointer:
+				self.Inject(field.Interface()) //recursively
+			case reflect.Struct:
+				self.Inject(field.Addr().Interface()) //recursively
+			default:
+				//pass
+			}
+			continue
+		}
+
+		//It's leave node
+		switch ft.Kind() {
+		case reflect.Struct:
+			x, err := self.tryBuild(field.Type())
+			if err != nil {
+				return err
+			}
+			field.Set(reflect.ValueOf(x))
+		case reflect.Interface:
+			x, err := self.SummonType(field.Type())
+			if err != nil {
+				return err
+			}
+			field.Set(reflect.ValueOf(x))
+		case reflect.Pointer:
+			x, err := self.tryBuild(field.Type().Elem())
+			if err != nil {
+				return err
+			}
+			p := reflect.New(ft.Elem())
+			val := reflect.ValueOf(x)
+			p.Elem().Set(val)
+			field.Set(p)
+		default:
+			x, err := self.SummonType(field.Type())
+			if err != nil {
+				return err
+			}
+			field.Set(reflect.ValueOf(x))
+		}
+	}
+	return nil
+}
+
+func main() {
+	fmt.Println("Hello, summoner")
 }

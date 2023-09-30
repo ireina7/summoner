@@ -12,6 +12,10 @@ func IsRule[A any]() bool {
 	return TypeOf[A]().Kind() == reflect.Struct
 }
 
+func Rules() string {
+	return global.Rules()
+}
+
 func Summon[I any]() (I, error) {
 	return Transfrom[any, I](&global).Summon()
 }
@@ -31,5 +35,6 @@ func GivenType(instance any, t reflect.Type) error {
 func Transfrom[A, B any](s *Summoner[A]) *Summoner[B] {
 	return &Summoner[B]{
 		instances: s.instances,
+		rules:     s.rules,
 	}
 }

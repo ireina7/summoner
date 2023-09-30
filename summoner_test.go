@@ -2,6 +2,7 @@ package summoner
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -11,6 +12,13 @@ func TestSummoner(t *testing.T) {
 	GivenType(new(ShowPerson), TypeOf[Show[Person]]())
 	Given[Show[int]](new(ShowInt))
 	Given[Show[string]](new(ShowString))
+	test()
+	global.GivenRule(
+		TypeOf[Debug[A]](),
+		TypeOf[Debug[A]](),
+	)
+
+	fmt.Println(Rules())
 
 	ev, err := Summon[Show[Person]]()
 	if err != nil {
@@ -43,7 +51,13 @@ func TestSummoner(t *testing.T) {
 	xx := ea.(App[Person])
 	xx.Execute(Person{1, "Jack", 14})
 
-	t.Log(global.Inspect())
+	// t.Log(global.Inspect())
+
+	// x, err := ValueFromTypeName("Person")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Printf("%#v\n", x)
 }
 
 type Person struct {
@@ -71,11 +85,11 @@ func (ev *ShowInt) Show(i int) string {
 type ShowString struct{}
 
 func (ev *ShowString) Show(s string) string {
-	return s
+	return "[str] " + s
 }
 
 type Debug[A any] struct {
-	Show Show[A]
+	Show Show[A] `showtag`
 }
 
 func (self *Debug[A]) Debug(a A) string {
@@ -100,4 +114,66 @@ func (app *App[A]) Execute(a A) {
 	fmt.Println("---------------------")
 	fmt.Println(app.Show.Show("This is a test!"))
 	app.Recursive.Log(a)
+}
+
+type Monoid[A any] interface {
+	Zero() A
+	Plus(A, A) A
+}
+
+type ForAll[A any] struct{}
+
+type MonoidSlice[A any] struct{}
+
+func (self *MonoidSlice[A]) Zero() []A {
+	return []A{}
+}
+
+func (self *MonoidSlice[A]) Plus(a, b []A) []A {
+	c := a
+	c = append(c, b...)
+	return c
+}
+
+// t: the rule name
+func (self *Summoner[A]) GivenRule(from reflect.Type, to reflect.Type) error {
+	self.rules[from] = to
+	return nil
+}
+
+func test() {
+	global.GivenRule(
+		TypeOf[MonoidSlice[A]](),
+		TypeOf[Monoid[[]A]](),
+	)
+}
+
+type Service struct {
+	Version  string
+	Debugger *Debug[string] `summon:"true"`
+	Device   Device
+}
+
+type Device struct {
+	Id   int `summon:"true"`
+	Name string
+	Show Show[string] `summon:"type"`
+}
+
+func TestInject(t *testing.T) {
+	Given[Show[string]](new(ShowString))
+	Given[int](-7)
+	device := &Device{
+		Name: "sp",
+	}
+	service := &Service{
+		Version: "0.1.0",
+		Device:  *device,
+	}
+	err := global.Inject(service)
+	if err != nil {
+		t.Error(err)
+	}
+	t.Logf("Service: %#v", service)
+	t.Log(service.Debugger.Debug("sss"))
 }
