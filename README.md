@@ -31,6 +31,9 @@ func Given[A any](a A) error {
     return summoner.Given(a)
 }
 
+func Inject(x any) error {
+    return summoner.Inject(x)
+}
 
 func main() {
     Given[int](0) // Default integer!
@@ -133,7 +136,7 @@ func main() {
 
 ```
 
-### Inject existing value
+## Inject existing value
 To inject some fields(e.g., summon only subset of a struct field set),
 Tag fields to be summoned with `summon:"true"`.
 ```go
