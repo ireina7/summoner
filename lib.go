@@ -28,6 +28,10 @@ func Given[I any](instance I) error {
 	return Transfrom[any, I](&global).Given(instance)
 }
 
+func Inject(obj any) error {
+	return global.Inject(obj)
+}
+
 func GivenType(instance any, t reflect.Type) error {
 	return global.GivenType(instance, t)
 }
