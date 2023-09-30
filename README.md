@@ -13,10 +13,12 @@ go get -u github.com/ireina7/summoner
 ```
 
 ### Usage
-Summoner has two basic functions: `Summon` and `Given`.
-`Summon[T]()` summons a value of type `T`,
-`Given[T](T)` injects a value of type `T`,
-`Inject(any)` injects any struct pointer recursively while still persist existing fields.
+Summoner has three basic functions: `Summon`, `Given` and `Inject`.
+
+- `Summon[T]()` summons a value of type `T`,
+- `Given[T](T)` injects a value of type `T`,
+- `Inject(any)` injects any struct pointer recursively while still persist existing fields.
+
 ```go
 import "fmt"
 import summoner "github.com/ireina7/summoner"
