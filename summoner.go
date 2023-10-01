@@ -169,36 +169,58 @@ func (self *Summoner[A]) Inject(structPtr any) error {
 			continue
 		}
 
-		//It's leave node
-		switch ft.Kind() {
-		case reflect.Struct:
-			x, err := self.tryBuild(field.Type())
-			if err != nil {
-				return err
-			}
-			field.Set(reflect.ValueOf(x))
-		case reflect.Interface:
-			x, err := self.SummonType(field.Type())
-			if err != nil {
-				return err
-			}
-			field.Set(reflect.ValueOf(x))
-		case reflect.Pointer:
-			x, err := self.tryBuild(field.Type().Elem())
-			if err != nil {
-				return err
-			}
-			p := reflect.New(ft.Elem())
-			val := reflect.ValueOf(x)
-			p.Elem().Set(val)
-			field.Set(p)
+		switch tag {
+		case "none":
+			continue
+		case "name":
+			// err := self.InjectByName(field, tag)
+			// if err != nil {
+			// 	return err
+			// }
+			// continue
+		case "type":
 		default:
-			x, err := self.SummonType(field.Type())
-			if err != nil {
-				return err
-			}
-			field.Set(reflect.ValueOf(x))
 		}
+
+		//It's leave node
+		err := self.InjectByType(field)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (self *Summoner[A]) InjectByType(field reflect.Value) error {
+	ft := field.Type()
+	switch ft.Kind() {
+	case reflect.Struct:
+		x, err := self.tryBuild(field.Type())
+		if err != nil {
+			return err
+		}
+		field.Set(reflect.ValueOf(x))
+	case reflect.Interface:
+		x, err := self.SummonType(field.Type())
+		if err != nil {
+			return err
+		}
+		field.Set(reflect.ValueOf(x))
+	case reflect.Pointer:
+		x, err := self.tryBuild(field.Type().Elem())
+		if err != nil {
+			return err
+		}
+		p := reflect.New(ft.Elem())
+		val := reflect.ValueOf(x)
+		p.Elem().Set(val)
+		field.Set(p)
+	default:
+		x, err := self.SummonType(field.Type())
+		if err != nil {
+			return err
+		}
+		field.Set(reflect.ValueOf(x))
 	}
 	return nil
 }

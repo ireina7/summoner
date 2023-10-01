@@ -150,12 +150,12 @@ func test() {
 
 type Service struct {
 	Version  string
-	Debugger *Debug[string] `summon:"true"`
-	Device   Device
+	Debugger *Debug[string] `summon:"type"`
+	Device   *Device
 }
 
 type Device struct {
-	Id   int `summon:"true"`
+	Id   int `summon:"type"`
 	Name string
 	Show Show[string] `summon:"type"`
 }
@@ -168,7 +168,7 @@ func TestInject(t *testing.T) {
 	}
 	service := &Service{
 		Version: "0.1.0",
-		Device:  *device,
+		Device:  device,
 	}
 	err := global.Inject(service)
 	if err != nil {
@@ -176,4 +176,5 @@ func TestInject(t *testing.T) {
 	}
 	t.Logf("Service: %#v", service)
 	t.Log(service.Debugger.Debug("sss"))
+	t.Log(service.Device.Show.Show("ss"))
 }
