@@ -33,9 +33,11 @@ type Transmute[A any] interface {
 // }
 
 type Summoner[A any] struct {
-	instances map[reflect.Type]any
+	instances map[reflect.Type]map[string]any
 	rules     map[reflect.Type]any
 }
+
+const DefaultName = ""
 
 type summonError struct {
 	want reflect.Type
@@ -68,13 +70,20 @@ func (self *Summoner[A]) tryBuild(t reflect.Type) (any, error) {
 	return ans, nil
 }
 
-func (self *Summoner[A]) Summon() (A, error) {
-	t := TypeOf[A]()
-	ev, ok := self.instances[t]
-	if ok {
-		return ev.(A), nil
-	}
+func (self *Summoner[A]) Summon(names ...string) (A, error) {
 	var a A
+	t := TypeOf[A]()
+	evMap, ok := self.instances[t]
+	if ok {
+		if len(names) > 0 {
+			ev, ok := evMap[names[0]]
+			if !ok {
+				return a, fmt.Errorf("")
+			}
+			return ev.(A), nil
+		}
+		return evMap[DefaultName].(A), nil
+	}
 	// return a, fmt.Errorf("Instance of %v not found", t)
 	x, err := self.tryBuild(t)
 	if err != nil {
@@ -84,9 +93,9 @@ func (self *Summoner[A]) Summon() (A, error) {
 }
 
 func (self *Summoner[A]) SummonType(t reflect.Type) (any, error) {
-	ev, ok := self.instances[t]
+	evMap, ok := self.instances[t]
 	if ok {
-		return ev, nil
+		return evMap[DefaultName], nil
 	}
 	// return nil, fmt.Errorf("Instance of %v not found", t)
 	var a A
@@ -102,9 +111,18 @@ func (self *Summoner[A]) Given(ev A) error {
 	return self.GivenType(ev, t)
 }
 
-func (self *Summoner[A]) GivenType(ev any, t reflect.Type) error {
-	self.instances[t] = ev
+func (self *Summoner[A]) GivenType(ev any, t reflect.Type, names ...string) error {
+	name := DefaultName
+	if len(names) > 0 {
+		name = names[0]
+	}
+	_, exist := self.instances[t]
+	if !exist {
+		self.instances[t] = map[string]any{}
+	}
+	self.instances[t][name] = ev
 	return nil
+
 }
 
 func (self *Summoner[A]) Inspect() string {
@@ -130,7 +148,7 @@ func (self *Summoner[A]) Rules() string {
 }
 
 var global Summoner[any] = Summoner[any]{
-	instances: map[reflect.Type]any{},
+	instances: map[reflect.Type]map[string]any{},
 	rules:     map[reflect.Type]any{},
 }
 
